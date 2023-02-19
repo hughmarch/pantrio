@@ -1,9 +1,13 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {Outlet, Link} from "react-router-dom";
 
-function Pantry() {
+function Layout({ username }) {
   return (
     <div>
+      <header>
+        <h1>{username}</h1>
+      </header>
+
       <Outlet />
 
       <nav>
@@ -14,10 +18,13 @@ function Pantry() {
           <li>
             <Link to="/recipes">Recipes</Link>
           </li>
+          <li>
+            <Link to="/profile">Profile</Link>
+          </li>
         </ul>
       </nav>
     </div>
   )
 }
 
-export default Pantry;
+export default Layout;
