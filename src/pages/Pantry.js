@@ -1,15 +1,35 @@
 import React, {useEffect, useState} from 'react';
+import {supabase} from "../supabaseClient";
 
-function Pantry() {
-  const allIngredients = ["apple", "apricot", "banana", "carrot"]
+function Pantry({ username }) {
+  const [allIngredients, setAllIngredients] = useState([])
   const units = ["teaspoons", "tablespoons", "ounces", "cups", "pints", "quarts"]
   const [text, setText] = useState('')
   const [suggestions, setSuggestions] = useState([])
   const [ingredients, setIngredients] = useState([])
 
-  // useEffect(() => {
-  //   loadUsers();
-  // }, [])
+  useEffect(() => {
+    const loadPantry = async () => {
+      let { data, error } = await supabase
+        .from('Pantries')
+        .select('*')
+        .eq('username', username)
+
+      if (error) console.error(error)
+      else setIngredients(data)
+    }
+
+    const loadIngredients = async () => {
+      let { data, error } = await supabase
+        .from('distinct_ingredients')
+        .select('*')
+
+      if (error) console.error(error)
+      else setAllIngredients(data.map(entry => entry.ingredient).sort())
+    }
+    loadPantry()
+    loadIngredients()
+  }, [username])
 
   const onChangeHandler = text => {
     let matches = []
@@ -31,9 +51,10 @@ function Pantry() {
 
   const addIngredient = name => {
     setIngredients([...ingredients, {
-      name: name,
+      ingredient: name,
       quantity: 1,
-      unit: "teaspoons"
+      unit: "teaspoons",
+      username: username
     }])
   }
 
@@ -55,11 +76,31 @@ function Pantry() {
     setIngredients(newIngredients)
   }
 
+  const save = async () => {
+    const { data, error } = await supabase
+      .from('Pantries')
+      .delete()
+      .eq('username', username)
+
+    if (error) {
+      console.error(error)
+      return
+    }
+
+    const { data1, error1 } = await supabase
+      .from('Pantries')
+      .insert(ingredients)
+
+    if (error1) {
+      console.error(error1)
+    }
+  }
+
   let ingredientList = []
 
   for (let i = 0; i < ingredients.length; i++) {
     ingredientList.push(<div className={"ingredient-item"} key={i}>
-      <p>{ingredients[i].name}</p>
+      <p>{ingredients[i].ingredient}</p>
       <input type="number" value={ingredients[i].quantity} onChange={e => changeQuantity(i, e.target.value)}/>
       <select value={ingredients[i].unit} onChange={e => changeUnits(i, e.target.value)}>
         {units.map(unit => <option value={unit}>{unit}</option>)}
@@ -88,7 +129,7 @@ function Pantry() {
         {ingredientList}
       </div>
 
-      <button>Save</button>
+      <button onClick={e => save()}>Save</button>
     </div>
   )
 }

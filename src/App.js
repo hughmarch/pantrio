@@ -15,8 +15,8 @@ function App() {
         <div className="content">
           <Routes>
             <Route path="/" element={<Layout username={username}/>}>
-              <Route index element={<Pantry />}/>
-              <Route path="recipes" element={<Recipes />}/>
+              <Route index element={<Pantry username={username}/>}/>
+              <Route path="recipes" element={<Recipes username={username}/>}/>
               <Route path="profile" element={<Profile onChangeUsername={setUsername} startUsername={username}/>}/>
             </Route>
           </Routes>
